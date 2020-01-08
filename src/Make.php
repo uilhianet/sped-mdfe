@@ -2467,20 +2467,23 @@ class Make
             ];
             $stdprop = $this->equilizeParameters($std->prop, $possible);
             $prop = $this->dom->createElement("prop");
-            $this->dom->addChild(
-                $prop,
-                "CPF",
-                $stdprop->CPF,
-                true,
-                $identificadorprop . "Número do CPF"
-            );
-            $this->dom->addChild(
-                $prop,
-                "CNPJ",
-                $stdprop->CNPJ,
-                true,
-                $identificadorprop . "Número do CNPJ"
-            );
+            if ($stdprop->CPF) {
+                $this->dom->addChild(
+                    $prop,
+                    "CPF",
+                    $stdprop->CPF,
+                    true,
+                    $identificadorprop . "Número do CPF"
+                );
+            } else {
+                $this->dom->addChild(
+                    $prop,
+                    "CNPJ",
+                    $stdprop->CNPJ,
+                    true,
+                    $identificadorprop . "Número do CNPJ"
+                );
+            }
             $this->dom->addChild(
                 $prop,
                 "RNTRC",

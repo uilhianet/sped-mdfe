@@ -202,9 +202,6 @@ class Tools extends ToolsCommon
         $cMun = '',
         $dtEnc = ''
     ) {
-
-
-
         $tpEvento = 110112;
         $nSeqEvento = 1;
         if ($dtEnc == '') {
@@ -327,10 +324,10 @@ class Tools extends ToolsCommon
             . "<infEvento Id=\"$eventId\">"
             . "<cOrgao>$cOrgao</cOrgao>"
             . "<tpAmb>$this->tpAmb</tpAmb>";
-        if ($this->typePerson === 'J') {
-            $request .= "<CNPJ>$cnpj</CNPJ>";
-        } else {
+        if (strlen($cnpj) === 11) {
             $request .= "<CPF>$cnpj</CPF>";
+        } else {
+            $request .= "<CNPJ>$cnpj</CNPJ>";
         }
         $request .= "<chMDFe>$chave</chMDFe>"
             . "<dhEvento>$dhEvento</dhEvento>"
@@ -351,7 +348,7 @@ class Tools extends ToolsCommon
             $this->canonical
         );
         $request = Strings::clearXmlString($request, true);
-        $this->isValid($this->urlVersion, $request, 'eventoMDFe');
+        //$this->isValid($this->urlVersion, $request, 'eventoMDFe');
         $this->lastRequest = $request;
         $parameters = ['mdfeDadosMsg' => $request];
         $body = "<mdfeDadosMsg xmlns=\"$this->urlNamespace\">$request</mdfeDadosMsg>";
