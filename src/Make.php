@@ -154,6 +154,10 @@ class Make
     /**
      * @type string|\DOMNode
      */
+    private $prodPred = '';
+    /**
+     * @type string|\DOMNode
+     */
     private $rodo = '';
     /**
      * @type string|\DOMNode
@@ -333,6 +337,9 @@ class Make
         }
         if (!empty($this->seg)) {
             $this->dom->addArrayChild($this->infMDFe, $this->seg, 'Falta tag "seg"');
+        }
+        if (!empty($this->prodPred)) {
+            $this->dom->appChild($this->infMDFe, $this->prodPred, 'Falta tag "prodPred"');
         }
         $this->dom->appChild($this->infMDFe, $this->tot, 'Falta tag "tot"');
         foreach ($this->lacres as $lacres) {
@@ -889,11 +896,20 @@ class Make
     {
         $possible = [
             'CPF',
-            'CNPJ'
+            'CNPJ',
+            'xNome',
+            'idEstrangeiro'
         ];
         $std = $this->equilizeParameters($std, $possible);
         $identificador = '[4] <infContratante> - ';
         $infContratante = $this->dom->createElement("infContratante");
+        $this->dom->addChild(
+            $infContratante,
+            "xNome",
+            $std->xNome,
+            false,
+            $identificador . "Razão Social ou nome do contratante"
+        );
         if ($std->CPF) {
             $this->dom->addChild(
                 $infContratante,
@@ -902,13 +918,21 @@ class Make
                 true,
                 $identificador . "Número do CPF do contratente do serviço"
             );
-        } else {
+        } else if ($std->CNPJ) {
             $this->dom->addChild(
                 $infContratante,
                 "CNPJ",
                 $std->CNPJ,
                 true,
                 $identificador . "Número do CNPJ do contratente do serviço"
+            );
+        } else {
+            $this->dom->addChild(
+                $infContratante,
+                "idEstrangeiro",
+                $std->idEstrangeiro,
+                true,
+                $identificador . "Número do idEstrangeiro do contratente do serviço"
             );
         }
         $this->infContratante[] = $infContratante;
@@ -1615,6 +1639,136 @@ class Make
         );
         $this->infAdic = $infAdic;
         return $infAdic;
+    }
+
+
+    /**
+     * prodPred
+     * Grupo de informações do Produto predominante da carga do MDF-e 
+     * tag MDFe/infMDFe/prodPred (opcional)
+     *
+     *
+     * @return DOMElement
+     */
+    public function tagprodPred(stdClass $std)
+    {
+        $possible = [
+            'tpCarga',
+            'xProd',
+            'cEAN',
+            'NCM',
+            'infLocalCarrega',
+            'infLocalDescarrega'
+        ];
+        $std = $this->equilizeParameters($std, $possible);
+        $identificador = '[1] <prodPred> - ';
+        $prodPred = $this->dom->createElement("prodPred");
+        $this->dom->addChild(
+            $prodPred,
+            "tpCarga",
+            $std->tpCarga,
+            true,
+            $identificador . "Tipo da Carga"
+        );
+        $this->dom->addChild(
+            $prodPred,
+            "xProd",
+            $std->xProd,
+            true,
+            $identificador . "Descrição do produto predominante"
+        );
+        $this->dom->addChild(
+            $prodPred,
+            "cEAN",
+            $std->cEAN,
+            false,
+            $identificador . "GTIN (Global Trade Item Number) do produto, antigo código EAN ou código do barras"
+        );
+        $this->dom->addChild(
+            $prodPred,
+            "NCM",
+            $std->NCM,
+            false,
+            $identificador . "Código NCM"
+        );
+        if (isset($std->infLocalCarrega) || isset($std->infLocalDescarrega)) {
+            $infLotacao = $this->dom->createElement("infLotacao");
+            if (isset($std->infLocalCarrega)) {
+                $possible = [
+                    'CEP',
+                    'latitude',
+                    'Longitude'
+                ];
+                $identificadorInfLocalCarrega = '[4] <infLocalCarrega> - ';
+                $stdInfLocalCarrega = $this->equilizeParameters($std->infLocalCarrega, $possible);
+                $infLocalCarrega = $this->dom->createElement("infLocalCarrega");
+                if (isset($stdInfLocalCarrega->CEP)) {
+                    $this->dom->addChild(
+                        $infLocalCarrega,
+                        "CEP",
+                        $stdInfLocalCarrega->CEP,
+                        true,
+                        $identificadorInfLocalCarrega . "CEP onde foi carregado o MDF-e"
+                    );
+                } else {
+                    $this->dom->addChild(
+                        $infLocalCarrega,
+                        "latitude",
+                        $stdInfLocalCarrega->latitude,
+                        true,
+                        $identificadorInfLocalCarrega . "Latitude do ponto geográfico onde foi carregado o MDF-e"
+                    );
+                    $this->dom->addChild(
+                        $infLocalCarrega,
+                        "Longitude",
+                        $stdInfLocalCarrega->Longitude,
+                        true,
+                        $identificadorInfLocalCarrega . "Longitude do ponto geográfico onde foi carregado o MDF-el"
+                    );
+                }
+                $this->dom->appChild($infLotacao, $infLocalCarrega, 'Falta tag "infLocalCarrega"');
+            }
+            if (isset($std->infLocalDescarrega)) {
+                $possible = [
+                    'CEP',
+                    'latitude',
+                    'Longitude'
+                ];
+                $identificadorInfLocalDescarrega = '[4] <infLocalCarrega> - ';
+                $stdInfLocalDescarrega = $this->equilizeParameters($std->infLocalDescarrega, $possible);
+                $infLocalDescarrega = $this->dom->createElement("infLocalDescarrega");
+                if (isset($stdInfLocalDescarrega->CEP)) {
+                    $this->dom->addChild(
+                        $infLocalDescarrega,
+                        "CEP",
+                        $stdInfLocalDescarrega->CEP,
+                        true,
+                        $identificadorInfLocalDescarrega . "CEP onde foi carregado o MDF-e"
+                    );
+                } else {
+                    $this->dom->addChild(
+                        $infLocalDescarrega,
+                        "latitude",
+                        $stdInfLocalDescarrega->latitude,
+                        true,
+                        $identificadorInfLocalDescarrega . "Latitude do ponto geográfico onde foi carregado o MDF-e"
+                    );
+                    $this->dom->addChild(
+                        $infLocalDescarrega,
+                        "Longitude",
+                        $stdInfLocalDescarrega->Longitude,
+                        true,
+                        $identificadorInfLocalDescarrega . "Longitude do ponto geográfico onde foi carregado o MDF-el"
+                    );
+                }
+                $this->dom->appChild($infLotacao, $infLocalDescarrega, 'Falta tag "infLocalDescarrega"');
+            }
+            $this->dom->appChild($prodPred, $infLotacao, 'Falta tag "infLotacao"');
+        }
+
+
+        $this->prodPred = $prodPred;
+        return $prodPred;
     }
 
     /**

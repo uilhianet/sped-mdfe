@@ -164,7 +164,7 @@ class Tools
      * @var array
      */
     protected $availableVersions = [
-        '3.00' => 'PL_MDFe_300a'
+        '3.00' => 'PL_MDFe_300a_NT012020'
     ];
 
     /**
